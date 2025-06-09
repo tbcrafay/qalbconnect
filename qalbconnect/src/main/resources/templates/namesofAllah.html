@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qalb Connect - 99 Names of Allah</title>
+    <link rel="stylesheet" th:href="@{/css/namesofAllah.css}"> <!-- Link to specific namesofAllah.css -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="back-button-container">
+        <!-- Button to go back to the home page -->
+        <a th:href="@{/home}">
+            <button class="back-button">&lt;&lt;&lt; Back to Home</button>
+        </a>
+    </div>
+
+    <div class="container">
+        <h1>99 Names of Allah</h1>
+        <div id="names-container">
+            <!-- Iterate over the 'names' list passed from the controller -->
+            <div class="name-card" th:each="name : ${names}">
+                <div class="arabic" th:text="${name.arabicName}">Arabic Name Placeholder</div>
+                <div class="english" th:text="${name.englishMeaning}">English Meaning Placeholder</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
