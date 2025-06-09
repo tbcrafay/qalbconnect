@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qalb Connect - Home</title>
+    <link rel="stylesheet" th:href="@{/css/home.css}"> <!-- Link to specific home.css -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="header">
+        <h1>Qalb Connect</h1>
+        <!-- Logout Button -->
+        <div class="logout-container">
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="logout-button">Logout</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="quote">
+        <!-- This will be populated by script.js -->
+        <p id="randomQuote"></p>
+    </div>
+
+    <div class="grid-container">
+        <!-- Feature links with their placeholder URLs -->
+        <!-- These URLs will be mapped to backend controllers for the actual features later -->
+        <a th:href="@{/qazaumri}" class="grid-item">Qaza-e-Umri Calculator</a>
+        <a th:href="@{/prophetstories}" class="grid-item">Kids Page "Prophets Stories"</a>
+        <a th:href="@{/versebymood}" class="grid-item">Verse By Mood</a>
+        <a th:href="@{/tasbeehcounter}" class="grid-item">Tasbeeh Counter</a>
+        <a th:href="@{/namesofAllah}" class="grid-item">99 Names of Allah</a>
+        <a th:href="@{/islamicquiz}" class="grid-item">Islamic Quiz Game</a>
+    </div>
+
+    <!-- Script for random quote - needs to be adapted -->
+    <script th:src="@{/js/home-script.js}" defer></script>
+</body>
+</html>

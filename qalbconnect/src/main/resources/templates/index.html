@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qalb Connect - Home</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar content: Logo and Feature Image -->
+    <div class="sidebar">
+        <div class="logo">
+            <!-- Your logo image. Ensure it's in src/main/resources/static/images/qalbconnectlogo.png -->
+            <img th:src="@{/images/qalbconnectlogo.png}" alt="QALB CONNECT Logo" onerror="this.onerror=null;this.src='https://placehold.co/150x150/0a1d15/bfdecc?text=LOGO';">
+            <h1>QALB CONNECT</h1>
+        </div>
+        <div class="image">
+            <!-- Your feature image. Ensure it's in src/main/resources/static/images/featuresimage.jpg -->
+            <img th:src="@{/images/featuresimage.jpg}" alt="Islamic Practices" onerror="this.onerror=null;this.src='https://placehold.co/400x300/0a1d15/bfdecc?text=Islamic+Practices';">
+        </div>
+    </div>
+
+    <!-- Main content area: Login/Register options -->
+    <div class="main-content">
+        <div class="container">
+            <h1>Welcome to Qalb Connect</h1>
+            <p>Connect with your faith, grow your knowledge.</p>
+            <a th:href="@{/login}" class="button-link"><button>Login</button></a>
+            <a th:href="@{/register}" class="button-link"><button>Register</button></a>
+        </div>
+    </div>
+</body>
+</html>

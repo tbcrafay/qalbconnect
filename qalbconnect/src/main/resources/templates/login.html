@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qalb Connect - Login</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar content: Logo and Feature Image -->
+    <div class="sidebar">
+        <div class="logo">
+            <!-- Your logo image with fallback -->
+            <img th:src="@{/images/qalbconnectlogo.png}" alt="QALB CONNECT Logo" onerror="this.onerror=null;this.src='https://placehold.co/150x150/0a1d15/bfdecc?text=LOGO';">
+            <h1>QALB CONNECT</h1>
+        </div>
+        <div class="image">
+            <!-- Your feature image with fallback -->
+            <img th:src="@{/images/featuresimage.jpg}" alt="Islamic Practices" onerror="this.onerror=null;this.src='https://placehold.co/400x300/0a1d15/bfdecc?text=Islamic+Practices';">
+        </div>
+    </div>
+
+    <!-- Main content area: Login Form -->
+    <div class="main-content">
+        <div class="container">
+            <h1>Login</h1>
+
+            <!-- Display success message after registration -->
+            <div th:if="${param.registered}" class="success-message">
+                You have been successfully registered! Please log in.
+            </div>
+
+            <!-- Display error message for failed login (from Spring Security) -->
+            <div th:if="${param.error}" class="error-message">
+                Invalid username or password.
+            </div>
+
+            <!-- Display message after logout -->
+            <div th:if="${param.logout}" class="success-message">
+                You have been logged out.
+            </div>
+
+            <!-- The form will submit to /login (handled by Spring Security directly) -->
+            <!-- We still bind to 'user' object for consistency and potential future client-side validation -->
+            <form th:action="@{/login}" th:object="${user}" method="post">
+                <label for="username">Username:</label>
+                <!-- name="username" is crucial for Spring Security's default form login -->
+                <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                <!-- No specific th:field for username/password as Spring Security expects 'name' attributes -->
+
+                <label for="password">Password:</label>
+                <!-- name="password" is crucial for Spring Security's default form login -->
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+
+                <button type="submit">Login</button>
+            </form>
+            <p>Don't have an account? <a th:href="@{/register}">Register here</a></p>
+        </div>
+    </div>
+</body>
+</html>
