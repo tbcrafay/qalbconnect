@@ -3,22 +3,21 @@ package com.qalbconnect.qalbconnect.service;
 import com.qalbconnect.qalbconnect.model.User;
 import com.qalbconnect.qalbconnect.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService; // Spring Security's interface
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList; // Used for authorities (no roles for now)
+import java.util.ArrayList;
+import java.util.Optional; // <--- Import Optional
 
-@Service // Marks this class as a Spring Service. By default, Spring manages it as a Singleton.
-public class UserService implements UserDetailsService { // Implementing UserDetailsService for Spring Security
+@Service
+public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    // Constructor Injection: Spring will inject the UserRepository and BCryptPasswordEncoder instances.
-    // Since UserService is a @Service, Spring manages its lifecycle as a Singleton.
     public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -32,7 +31,6 @@ public class UserService implements UserDetailsService { // Implementing UserDet
      * @return The registered User object, or null if registration fails (e.g., username/email already exists).
      */
     public User registerUser(String username, String password, String email) {
-        // --- Design Pattern: Null Object (via Optional's effective handling) / Defensive Programming ---
         if (userRepository.existsByUsername(username)) {
             System.err.println("Registration failed: Username '" + username + "' already exists.");
             return null;
@@ -45,31 +43,39 @@ public class UserService implements UserDetailsService { // Implementing UserDet
         User newUser = new User();
         newUser.setUsername(username);
         newUser.setEmail(email);
-        newUser.setPassword(passwordEncoder.encode(password)); // Hash the password!
+        newUser.setPassword(passwordEncoder.encode(password));
         newUser.setRegistrationDate(LocalDateTime.now());
 
-        return userRepository.save(newUser); // Save the new user to the database
+        return userRepository.save(newUser);
     }
 
     /**
      * Loads user-specific data used by Spring Security for authentication.
-     * This is the core method for the **Adapter Pattern**:
-     * It adapts our `com.qalbconnect.qalbconnect.model.User` to Spring Security's `UserDetails` interface.
      * @param username The username of the user to load.
      * @return A UserDetails object representing the user.
      * @throws UsernameNotFoundException If the user is not found.
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username) // This is now a call to UserRepository's method
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
-        // Return a Spring Security UserDetails object.
-        // Since you don't have roles for now, we can pass an empty list for authorities.
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
-                user.getPassword(), // This is the HASHED password from the DB
-                new ArrayList<>() // No roles/authorities for now
+                user.getPassword(),
+                new ArrayList<>()
         );
+    }
+
+    /**
+     * Finds a User entity by username.
+     * This method is specifically for retrieving our domain User object.
+     * --- Design Pattern: Null Object (via Optional) ---
+     * Returns an Optional, forcing explicit handling of non-existence.
+     * @param username The username to search for.
+     * @return An Optional containing the User if found, or an empty Optional if not found.
+     */
+    public Optional<User> findUserByUsername(String username) { // <--- ADD THIS METHOD
+        return userRepository.findByUsername(username); // Rely on UserRepository for actual lookup
     }
 }

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qalb Connect - Qaza Prayers Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/qazaCalculator.css}">
+</head>
+<body>
+    <div class="back-button-container">
+        <!-- Button to go back to the home page -->
+        <a th:href="@{/home}">
+            <button class="back-button">&lt;&lt;&lt; Back to Home</button>
+        </a>
+    </div>
+
+    <div class="container">
+        <h1>Qaza Prayers Calculator</h1>
+
+        <!-- Calculation Form -->
+        <form th:action="@{/qazaumri}" th:object="${request}" method="post" id="qazaCalculatorForm">
+            <label for="dateFrom">Date From (When You Became Baligh):</label>
+            <input type="date" id="dateFrom" th:field="*{startDate}" required>
+            <!-- Display validation errors for startDate -->
+            <span th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}" class="error-message"></span>
+
+            <label for="dateTo">Date To (Current Date):</label>
+            <input type="date" id="dateTo" th:field="*{endDate}" required>
+            <!-- Display validation errors for endDate -->
+            <span th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}" class="error-message"></span>
+
+            <div class="btn-container">
+                <button type="submit" class="calculate">Calculate & Save</button>
+                <button type="reset" class="clear" onclick="clearFormAndResults()">Clear</button>
+            </div>
+        </form>
+
+        <!-- Current Calculation Results (will be displayed after a POST request) -->
+        <!-- The 'currentResponse' object is populated by the controller after calculation -->
+        <div id="results" class="results" th:if="${response.totalDays > 0 || response.statusMessage != null}">
+            <h2>Current Results:</h2>
+            <p th:if="${response.statusMessage != null}"
+               th:classappend="${response.statusMessage.contains('Error') ? 'error' : 'success'}"
+               th:text="${response.statusMessage}" class="status-message"></p>
+
+            <div th:if="${response.totalDays > 0}">
+                <p>Date From: <strong><span th:text="${response.startDateString}"></span></strong></p>
+                <p>Date To: <strong><span th:text="${response.endDateString}"></span></strong></p>
+                <p>Total Days: <strong><span th:text="${response.totalDays}"></span></strong></p>
+                <p>Fajr: <strong><span th:text="${response.fajrCount}"></span></strong></p>
+                <p>Zuhr: <strong><span th:text="${response.zuhrCount}"></span></strong></p>
+                <p>Asr: <strong><span th:text="${response.asrCount}"></span></strong></p>
+                <p>Maghrib: <strong><span th:text="${response.maghribCount}"></span></strong></p>
+                <p>Isha: <strong><span th:text="${response.ishaCount}"></span></strong></p>
+                <p>Witr: <strong><span th:text="${response.witrCount}"></span></strong></p>
+            </div>
+        </div>
+
+        <!-- History of Past Calculations -->
+        <div class="history-section" th:if="${!#lists.isEmpty(history)}">
+            <h2>Your Past Calculations:</h2>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>From - To</th>
+                        <th>Days</th>
+                        <th>Fajr</th>
+                        <th>Zuhr</th>
+                        <th>Asr</th>
+                        <th>Maghrib</th>
+                        <th>Isha</th>
+                        <th>Witr</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="entry : ${history}">
+                        <td th:text="${entry.calculationTimestampString}"></td> <!-- CORRECTED LINE HERE -->
+                        <td th:text="${entry.startDateString} + ' - ' + ${entry.endDateString}"></td> <!-- Using DTO strings -->
+                        <td th:text="${entry.totalDays}"></td>
+                        <td th:text="${entry.fajrCount}"></td>
+                        <td th:text="${entry.zuhrCount}"></td>
+                        <td th:text="${entry.asrCount}"></td>
+                        <td th:text="${entry.maghribCount}"></td>
+                        <td th:text="${entry.ishaCount}"></td>
+                        <td th:text="${entry.witrCount}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set max date for date input to today
+            const dateToInput = document.getElementById('dateTo');
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+            const day = String(today.getDate()).padStart(2, '0');
+            dateToInput.setAttribute('max', `${year}-${month}-${day}`);
+
+            // If endDate is initially empty, set it to today's date for user convenience
+            // Note: Thymeleaf might pre-fill this if it was part of a previous form submission
+            if (dateToInput.value === '') {
+                dateToInput.value = `${year}-${month}-${day}`;
+            }
+        });
+
+        // Function to clear the form and hide results/history (optional, but good UX for reset button)
+        function clearFormAndResults() {
+            document.getElementById('qazaCalculatorForm').reset(); // Resets the form
+            // Hide the results div (if visible)
+            const resultsDiv = document.getElementById('results');
+            if (resultsDiv) {
+                resultsDiv.style.display = 'none';
+            }
+            // Redirects to reset the page to its initial state, clearing displayed history from Model
+            window.location.href = /*[[@{/qazaumri}]]*/ '/qazaumri';
+        }
+        /*]]>*/
+    </script>
+</body>
+</html>
