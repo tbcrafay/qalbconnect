@@ -13,7 +13,6 @@ public class TasbeehController { // Class name changed from TasbeehCounterContro
 
     private final TasbeehService tasbeehService;
 
-    @Autowired // Spring will inject the TasbeehService here
     public TasbeehController(TasbeehService tasbeehService) { // Constructor name also updated
         this.tasbeehService = tasbeehService;
     }
