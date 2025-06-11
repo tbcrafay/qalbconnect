@@ -18,8 +18,14 @@
     <div class="container">
         <h1>Qaza Prayers Calculator</h1>
 
+        <!-- General Status Message Display -->
+        <div th:if="${statusMessage}"
+             th:classappend="${statusClass}"
+             th:text="${statusMessage}" class="status-message fade-out"></div>
+
         <!-- Calculation Form -->
         <form th:action="@{/qazaumri}" th:object="${request}" method="post" id="qazaCalculatorForm">
+            <h2>Calculate New Qaza Period:</h2>
             <label for="dateFrom">Date From (When You Became Baligh):</label>
             <input type="date" id="dateFrom" th:field="*{startDate}" required>
             <span th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}" class="error-message"></span>
@@ -48,63 +54,158 @@
                 <label for="totalMonthlyCycles">Total Monthly Cycles:</label>
                 <input type="number" id="totalMonthlyCycles" th:field="*{totalMonthlyCycles}" min="0">
                 <span th:if="${#fields.hasErrors('totalMonthlyCycles')}" th:errors="*{totalMonthlyCycles}" class="error-message"></span>
+
+                <!-- This line is now conditional for female gender -->
+                <p>Excluded Period Days: <strong><span th:text="${response.excludedPeriodDays}"></span></strong></p>
             </div>
 
             <div class="btn-container">
-                <button type="submit" class="calculate">Calculate & Save</button>
-                <button type="reset" class="clear" onclick="clearFormAndResults()">Clear</button>
+                <button type="submit" class="calculate">Calculate & Save Initial Qaza</button>
+                <button type="reset" class="clear" onclick="clearFormAndResults()">Clear Form</button>
             </div>
         </form>
 
-        <!-- Current Calculation Results -->
-        <div id="results" class="results" th:if="${response.totalCalendarDays > 0 || response.statusMessage != null}">
-            <h2>Current Results:</h2>
-            <p th:if="${response.statusMessage != null}"
-               th:classappend="${response.statusMessage.contains('Error') ? 'error' : 'success'}"
-               th:text="${response.statusMessage}" class="status-message"></p>
+        <!-- Current Calculation Results (Now always displays the most recent entry from history) -->
+        <div id="results" class="results" th:if="${!#lists.isEmpty(history)}">
+            <h2>Current Outstanding Qaza Prayers:</h2>
+            <!-- Display the latest entry from history here -->
+            <div th:with="latestEntry=${history[0]}">
+                <p>Calculated On: <strong><span th:text="${latestEntry.calculationTimestampString}"></span></strong></p>
+                <p>Period: <strong><span th:text="${latestEntry.startDateString} + ' - ' + ${latestEntry.endDateString}"></span></strong></p>
+                <p>Gender: <strong><span th:text="${latestEntry.gender}"></span></strong></p>
+                <p>Total Calendar Days: <strong><span th:text="${latestEntry.totalCalendarDays}"></span></strong></p>
 
-            <div th:if="${response.totalCalendarDays > 0}">
-                <p>Date From: <strong><span th:text="${response.startDateString}"></span></strong></p>
-                <p>Date To: <strong><span th:text="${response.endDateString}"></span></strong></p>
-                <p>Gender: <strong><span th:text="${response.gender}"></span></strong></p>
-                <p>Total Calendar Days: <strong><span th:text="${response.totalCalendarDays}"></span></strong></p>
-
-                <div th:if="${response.gender == 'female'}">
-                    <p>Average Period Days: <strong><span th:text="${response.averagePeriodDays}"></span></strong></p>
-                    <p>Total Monthly Cycles: <strong><span th:text="${response.totalMonthlyCycles}"></span></strong></p>
+                <div th:if="${latestEntry.gender == 'female'}">
+                    <p>Avg Period Days: <strong><span th:text="${latestEntry.averagePeriodDays}"></span></strong></p>
+                    <p>Total Monthly Cycles: <strong><span th:text="${latestEntry.totalMonthlyCycles}"></span></strong></p>
+                    <p>Excluded Period Days: <strong><span th:text="${latestEntry.excludedPeriodDays}"></span></strong></p>
                 </div>
-                <p>Excluded Period Days: <strong><span th:text="${response.excludedPeriodDays}"></span></strong></p>
-                <p>Final Missed Days for Calculation: <strong><span th:text="${response.finalMissedDaysForCalculation}"></span></strong></p>
-                
-                <p>Fajr: <strong><span th:text="${response.fajrCount}"></span></strong></p>
-                <p>Zuhr: <strong><span th:text="${response.zuhrCount}"></span></strong></p>
-                <p>Asr: <strong><span th:text="${response.asrCount}"></span></strong></p>
-                <p>Maghrib: <strong><span th:text="${response.maghribCount}"></span></strong></p>
-                <p>Isha: <strong><span th:text="${response.ishaCount}"></span></strong></p>
-                <p>Witr: <strong><span th:text="${response.witrCount}"></span></strong></p>
+                <p>Final Missed Days for Calculation: <strong><span th:text="${latestEntry.finalMissedDaysForCalculation}"></span></strong></p>
+
+                <div class="current-prayer-counts-grid">
+                    <span>Fajr: <strong th:text="${latestEntry.fajrCount}"></strong></span>
+                    <span>Zuhr: <strong th:text="${latestEntry.zuhrCount}"></strong></span>
+                    <span>Asr: <strong th:text="${latestEntry.asrCount}"></strong></span>
+                    <span>Maghrib: <strong th:text="${latestEntry.maghribCount}"></strong></span>
+                    <span>Isha: <strong th:text="${latestEntry.ishaCount}"></strong></span>
+                    <span>Witr: <strong th:text="${latestEntry.witrCount}"></strong></span>
+                </div>
+                <!-- Display Total Remaining Prayers prominently -->
+                <p class="total-remaining-display">Total Qaza Prayers Remaining: <strong><span th:text="${latestEntry.totalRemainingPrayers}"></span></strong></p>
             </div>
         </div>
 
+        <!-- Update Prayers Form -->
+        <div class="update-section" th:if="${!#lists.isEmpty(history)}">
+            <h2>Update Qaza Prayers (Prayed Now):</h2>
+            <p class="info-message">Enter the number of prayers you have *just completed* for each time. This will update your latest record.</p>
+            <form th:action="@{/qazaumri/updatePrayers}" th:object="${updateRequest}" method="post" id="updateQazaForm">
+                <div class="prayer-input-grid">
+                    <div>
+                        <label for="fajrPrayed">Fajr:</label>
+                        <input type="number" id="fajrPrayed" th:field="*{fajrPrayed}" min="0" value="0">
+                        <span th:if="${#fields.hasErrors('fajrPrayed')}" th:errors="*{fajrPrayed}" class="error-message"></span>
+                    </div>
+                    <div>
+                        <label for="zuhrPrayed">Zuhr:</label>
+                        <input type="number" id="zuhrPrayed" th:field="*{zuhrPrayed}" min="0" value="0">
+                        <span th:if="${#fields.hasErrors('zuhrPrayed')}" th:errors="*{zuhrPrayed}" class="error-message"></span>
+                    </div>
+                    <div>
+                        <label for="asrPrayed">Asr:</label>
+                        <input type="number" id="asrPrayed" th:field="*{asrPrayed}" min="0" value="0">
+                        <span th:if="${#fields.hasErrors('asrPrayed')}" th:errors="*{asrPrayed}" class="error-message"></span>
+                    </div>
+                    <div>
+                        <label for="maghribPrayed">Maghrib:</label>
+                        <input type="number" id="maghribPrayed" th:field="*{maghribPrayed}" min="0" value="0">
+                        <span th:if="${#fields.hasErrors('maghribPrayed')}" th:errors="*{maghribPrayed}" class="error-message"></span>
+                    </div>
+                    <div>
+                        <label for="ishaPrayed">Isha:</label>
+                        <input type="number" id="ishaPrayed" th:field="*{ishaPrayed}" min="0" value="0">
+                        <span th:if="${#fields.hasErrors('ishaPrayed')}" th:errors="*{ishaPrayed}" class="error-message"></span>
+                    </div>
+                    <div>
+                        <label for="witrPrayed">Witr:</label>
+                        <input type="number" id="witrPrayed" th:field="*{witrPrayed}" min="0" value="0">
+                        <span th:if="${#fields.hasErrors('witrPrayed')}" th:errors="*{witrPrayed}" class="error-message"></span>
+                    </div>
+                </div>
+                <div class="btn-container update-btn-container">
+                    <button type="submit" class="update">Update Prayers</button>
+                    <button type="button" class="reset-update" onclick="resetUpdateForm()">Reset Update Form</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- NEW: Add Missed Prayers Form -->
+        <div class="add-missed-section" th:if="${!#lists.isEmpty(history)}">
+            <h2>Add Newly Missed Prayers:</h2>
+            <p class="info-message">Enter the number of prayers you have *just missed* for each time. This will add to your latest record.</p>
+            <form th:action="@{/qazaumri/addMissedPrayers}" th:object="${addRequest}" method="post" id="addMissedForm">
+                <div class="prayer-input-grid">
+                    <div>
+                        <label for="fajrMissed">Fajr:</label>
+                        <input type="number" id="fajrMissed" th:field="*{fajrMissed}" min="0" value="0">
+                        <span th:if="${#fields.hasErrors('fajrMissed')}" th:errors="*{fajrMissed}" class="error-message"></span>
+                    </div>
+                    <div>
+                        <label for="zuhrMissed">Zuhr:</label>
+                        <input type="number" id="zuhrMissed" th:field="*{zuhrMissed}" min="0" value="0">
+                        <span th:if="${#fields.hasErrors('zuhrMissed')}" th:errors="*{zuhrMissed}" class="error-message"></span>
+                    </div>
+                    <div>
+                        <label for="asrMissed">Asr:</label>
+                        <input type="number" id="asrMissed" th:field="*{asrMissed}" min="0" value="0">
+                        <span th:if="${#fields.hasErrors('asrMissed')}" th:errors="*{asrMissed}" class="error-message"></span>
+                    </div>
+                    <div>
+                        <label for="maghribMissed">Maghrib:</label>
+                        <input type="number" id="maghribMissed" th:field="*{maghribMissed}" min="0" value="0">
+                        <span th:if="${#fields.hasErrors('maghribMissed')}" th:errors="*{maghribMissed}" class="error-message"></span>
+                    </div>
+                    <div>
+                        <label for="ishaMissed">Isha:</label>
+                        <input type="number" id="ishaMissed" th:field="*{ishaMissed}" min="0" value="0">
+                        <span th:if="${#fields.hasErrors('ishaMissed')}" th:errors="*{ishaMissed}" class="error-message"></span>
+                    </div>
+                    <div>
+                        <label for="witrMissed">Witr:</label>
+                        <input type="number" id="witrMissed" th:field="*{witrMissed}" min="0" value="0">
+                        <span th:if="${#fields.hasErrors('witrMissed')}" th:errors="*{witrMissed}" class="error-message"></span>
+                    </div>
+                </div>
+                <div class="btn-container add-btn-container">
+                    <button type="submit" class="add">Add Missed Prayers</button>
+                    <button type="button" class="reset-add" onclick="resetAddForm()">Reset Add Form</button>
+                </div>
+            </form>
+        </div>
+
+
         <!-- History of Past Calculations -->
         <div class="history-section" th:if="${!#lists.isEmpty(history)}">
-            <h2>Your Past Calculations:</h2>
+            <h2>Your Past Calculations History:</h2>
             <div class="table-scroll-wrapper"> <!-- New wrapper for horizontal scroll -->
                 <table class="history-table">
                     <thead>
                         <tr>
-                            <th>Date</th>
-                            <th>From - To</th>
-                            <th>Days (Total)</th>
+                            <th>Date & Time</th>
+                            <th>Period</th>
+                            <th>Total Days</th>
                             <th>Gender</th>
                             <th>Avg Period Days</th>
                             <th>Total Cycles</th>
                             <th>Excluded Days</th>
                             <th>Final Missed Days</th>
-                            <th>Prayers</th> <!-- CONSOLIDATED PRAYERS HEADER -->
+                            <th>Prayers (F/Z/A/M/I/W)</th> <!-- CONSOLIDATED PRAYERS HEADER -->
+                            <th>Total Remaining</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="entry : ${history}">
+                        <!-- Loop through history, skipping the first element (which is the current one displayed above) -->
+                        <tr th:each="entry, iterStat : ${history}" th:if="${iterStat.index > 0}">
                             <td th:text="${entry.calculationTimestampString}"></td>
                             <td th:text="${entry.startDateString} + ' - ' + ${entry.endDateString}"></td>
                             <td th:text="${entry.totalCalendarDays}"></td>
@@ -125,10 +226,15 @@
                                     <span>Witr: <strong th:text="${entry.witrCount}"></strong></span>
                                 </div>
                             </td>
+                            <!-- NEW: Display Total Remaining Prayers for history -->
+                            <td th:text="${entry.totalRemainingPrayers}"></td>
                         </tr>
                     </tbody>
                 </table>
             </div> <!-- End table-scroll-wrapper -->
+        </div>
+        <div th:if="${#lists.isEmpty(history)}" class="info-message empty-history-message">
+            <p>No Qaza prayer calculations found yet. Please use the form above to perform your first calculation!</p>
         </div>
     </div>
 

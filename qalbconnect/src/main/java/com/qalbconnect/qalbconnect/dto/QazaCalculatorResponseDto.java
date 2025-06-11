@@ -22,6 +22,9 @@ public class QazaCalculatorResponseDto {
     private String endDateString;
     private String calculationTimestampString;
 
+    // NEW FIELD: Sum of all individual Qaza prayer counts (Fajr+Zuhr+Asr+Maghrib+Isha+Witr)
+    private long totalRemainingPrayers;
+
     // Default constructor
     public QazaCalculatorResponseDto() {
     }
@@ -49,6 +52,8 @@ public class QazaCalculatorResponseDto {
         this.startDateString = startDateString;
         this.endDateString = endDateString;
         this.calculationTimestampString = calculationTimestampString;
+        // Calculate total remaining prayers based on individual counts for this constructor
+        this.totalRemainingPrayers = fajrCount + zuhrCount + asrCount + maghribCount + ishaCount + witrCount;
     }
 
 
@@ -79,6 +84,13 @@ public class QazaCalculatorResponseDto {
         dto.setStartDateString(entry.getStartDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
         dto.setEndDateString(entry.getEndDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
         dto.setCalculationTimestampString(entry.getCalculationTimestamp().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
+
+        // NEW: Calculate total remaining prayers from the entity's individual counts
+        dto.setTotalRemainingPrayers(
+            entry.getFajrCount() + entry.getZuhrCount() + entry.getAsrCount() +
+            entry.getMaghribCount() + entry.getIshaCount() + entry.getWitrCount()
+        );
+
         return dto;
     }
 
@@ -210,5 +222,14 @@ public class QazaCalculatorResponseDto {
 
     public void setCalculationTimestampString(String calculationTimestampString) {
         this.calculationTimestampString = calculationTimestampString;
+    }
+
+    // NEW: Getter and Setter for totalRemainingPrayers
+    public long getTotalRemainingPrayers() {
+        return totalRemainingPrayers;
+    }
+
+    public void setTotalRemainingPrayers(long totalRemainingPrayers) {
+        this.totalRemainingPrayers = totalRemainingPrayers;
     }
 }
