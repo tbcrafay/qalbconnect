@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Corrected: Use 'name' from ProphetStory object and proper escaping -->
+    <title th:text="${'Qalb Connect - ' + prophetStory.name + '''s Story'}">Prophet Story</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/prophet-stories.css}">
+</head>
+<body>
+    <div class="back-button-container">
+        <!-- Back to Prophet List button -->
+        <a th:href="@{/prophets}">
+            <button class="back-button">&lt;&lt;&lt; Back to Prophets</button>
+        </a>
+    </div>
+
+    <div class="container">
+        <!-- Corrected: Use 'name' from ProphetStory object and proper escaping -->
+        <h1 th:text="${prophetStory.name + '''s Story'}">Prophet's Story</h1>
+
+        <!-- Story content display -->
+        <div class="story-container">
+            <!-- Corrected: Use 'name' for sub-heading and proper escaping -->
+            <h3 th:text="${'The Story of ' + prophetStory.name}"></h3>
+            <!-- Use 'narrative' from ProphetStory object. -->
+            <p th:utext="${prophetStory.narrative}">Story content goes here...</p>
+        </div>
+    </div>
+</body>
+</html>
