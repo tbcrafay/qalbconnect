@@ -22,13 +22,33 @@
         <form th:action="@{/qazaumri}" th:object="${request}" method="post" id="qazaCalculatorForm">
             <label for="dateFrom">Date From (When You Became Baligh):</label>
             <input type="date" id="dateFrom" th:field="*{startDate}" required>
-            <!-- Display validation errors for startDate -->
             <span th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}" class="error-message"></span>
 
             <label for="dateTo">Date To (Current Date):</label>
             <input type="date" id="dateTo" th:field="*{endDate}" required>
-            <!-- Display validation errors for endDate -->
             <span th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}" class="error-message"></span>
+
+            <!-- Gender Selection -->
+            <div class="gender-selection">
+                <label>Gender:</label>
+                <input type="radio" id="genderMale" name="gender" value="male" th:field="*{gender}" required>
+                <label for="genderMale">Male</label>
+
+                <input type="radio" id="genderFemale" name="gender" value="female" th:field="*{gender}">
+                <label for="genderFemale">Female</label>
+            </div>
+            <span th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}" class="error-message"></span>
+
+            <!-- Female-specific inputs (initially hidden, controlled by JS) -->
+            <div id="femaleDetails" class="gender-details">
+                <label for="averagePeriodDays">Average Period Days (3-10):</label>
+                <input type="number" id="averagePeriodDays" th:field="*{averagePeriodDays}" min="3" max="10">
+                <span th:if="${#fields.hasErrors('averagePeriodDays')}" th:errors="*{averagePeriodDays}" class="error-message"></span>
+
+                <label for="totalMonthlyCycles">Total Monthly Cycles:</label>
+                <input type="number" id="totalMonthlyCycles" th:field="*{totalMonthlyCycles}" min="0">
+                <span th:if="${#fields.hasErrors('totalMonthlyCycles')}" th:errors="*{totalMonthlyCycles}" class="error-message"></span>
+            </div>
 
             <div class="btn-container">
                 <button type="submit" class="calculate">Calculate & Save</button>
@@ -36,18 +56,26 @@
             </div>
         </form>
 
-        <!-- Current Calculation Results (will be displayed after a POST request) -->
-        <!-- The 'currentResponse' object is populated by the controller after calculation -->
-        <div id="results" class="results" th:if="${response.totalDays > 0 || response.statusMessage != null}">
+        <!-- Current Calculation Results -->
+        <div id="results" class="results" th:if="${response.totalCalendarDays > 0 || response.statusMessage != null}">
             <h2>Current Results:</h2>
             <p th:if="${response.statusMessage != null}"
                th:classappend="${response.statusMessage.contains('Error') ? 'error' : 'success'}"
                th:text="${response.statusMessage}" class="status-message"></p>
 
-            <div th:if="${response.totalDays > 0}">
+            <div th:if="${response.totalCalendarDays > 0}">
                 <p>Date From: <strong><span th:text="${response.startDateString}"></span></strong></p>
                 <p>Date To: <strong><span th:text="${response.endDateString}"></span></strong></p>
-                <p>Total Days: <strong><span th:text="${response.totalDays}"></span></strong></p>
+                <p>Gender: <strong><span th:text="${response.gender}"></span></strong></p>
+                <p>Total Calendar Days: <strong><span th:text="${response.totalCalendarDays}"></span></strong></p>
+
+                <div th:if="${response.gender == 'female'}">
+                    <p>Average Period Days: <strong><span th:text="${response.averagePeriodDays}"></span></strong></p>
+                    <p>Total Monthly Cycles: <strong><span th:text="${response.totalMonthlyCycles}"></span></strong></p>
+                </div>
+                <p>Excluded Period Days: <strong><span th:text="${response.excludedPeriodDays}"></span></strong></p>
+                <p>Final Missed Days for Calculation: <strong><span th:text="${response.finalMissedDaysForCalculation}"></span></strong></p>
+                
                 <p>Fajr: <strong><span th:text="${response.fajrCount}"></span></strong></p>
                 <p>Zuhr: <strong><span th:text="${response.zuhrCount}"></span></strong></p>
                 <p>Asr: <strong><span th:text="${response.asrCount}"></span></strong></p>
@@ -60,67 +88,51 @@
         <!-- History of Past Calculations -->
         <div class="history-section" th:if="${!#lists.isEmpty(history)}">
             <h2>Your Past Calculations:</h2>
-            <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>From - To</th>
-                        <th>Days</th>
-                        <th>Fajr</th>
-                        <th>Zuhr</th>
-                        <th>Asr</th>
-                        <th>Maghrib</th>
-                        <th>Isha</th>
-                        <th>Witr</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="entry : ${history}">
-                        <td th:text="${entry.calculationTimestampString}"></td> <!-- CORRECTED LINE HERE -->
-                        <td th:text="${entry.startDateString} + ' - ' + ${entry.endDateString}"></td> <!-- Using DTO strings -->
-                        <td th:text="${entry.totalDays}"></td>
-                        <td th:text="${entry.fajrCount}"></td>
-                        <td th:text="${entry.zuhrCount}"></td>
-                        <td th:text="${entry.asrCount}"></td>
-                        <td th:text="${entry.maghribCount}"></td>
-                        <td th:text="${entry.ishaCount}"></td>
-                        <td th:text="${entry.witrCount}"></td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-scroll-wrapper"> <!-- New wrapper for horizontal scroll -->
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>From - To</th>
+                            <th>Days (Total)</th>
+                            <th>Gender</th>
+                            <th>Avg Period Days</th>
+                            <th>Total Cycles</th>
+                            <th>Excluded Days</th>
+                            <th>Final Missed Days</th>
+                            <th>Prayers</th> <!-- CONSOLIDATED PRAYERS HEADER -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="entry : ${history}">
+                            <td th:text="${entry.calculationTimestampString}"></td>
+                            <td th:text="${entry.startDateString} + ' - ' + ${entry.endDateString}"></td>
+                            <td th:text="${entry.totalCalendarDays}"></td>
+                            <td th:text="${entry.gender}"></td>
+                            <td th:text="${entry.averagePeriodDays != null ? entry.averagePeriodDays : '-'}"></td>
+                            <td th:text="${entry.totalMonthlyCycles != null ? entry.totalMonthlyCycles : '-'}"></td>
+                            <td th:text="${entry.excludedPeriodDays}"></td>
+                            <td th:text="${entry.finalMissedDaysForCalculation}"></td>
+                            
+                            <!-- CONSOLIDATED PRAYERS CELL WITH INNER GRID -->
+                            <td>
+                                <div class="prayer-counts-grid">
+                                    <span>Fajr: <strong th:text="${entry.fajrCount}"></strong></span>
+                                    <span>Zuhr: <strong th:text="${entry.zuhrCount}"></strong></span>
+                                    <span>Asr: <strong th:text="${entry.asrCount}"></strong></span>
+                                    <span>Maghrib: <strong th:text="${entry.maghribCount}"></strong></span>
+                                    <span>Isha: <strong th:text="${entry.ishaCount}"></strong></span>
+                                    <span>Witr: <strong th:text="${entry.witrCount}"></strong></span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div> <!-- End table-scroll-wrapper -->
         </div>
     </div>
 
-    <script th:inline="javascript">
-        /*<![CDATA[*/
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set max date for date input to today
-            const dateToInput = document.getElementById('dateTo');
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
-            const day = String(today.getDate()).padStart(2, '0');
-            dateToInput.setAttribute('max', `${year}-${month}-${day}`);
-
-            // If endDate is initially empty, set it to today's date for user convenience
-            // Note: Thymeleaf might pre-fill this if it was part of a previous form submission
-            if (dateToInput.value === '') {
-                dateToInput.value = `${year}-${month}-${day}`;
-            }
-        });
-
-        // Function to clear the form and hide results/history (optional, but good UX for reset button)
-        function clearFormAndResults() {
-            document.getElementById('qazaCalculatorForm').reset(); // Resets the form
-            // Hide the results div (if visible)
-            const resultsDiv = document.getElementById('results');
-            if (resultsDiv) {
-                resultsDiv.style.display = 'none';
-            }
-            // Redirects to reset the page to its initial state, clearing displayed history from Model
-            window.location.href = /*[[@{/qazaumri}]]*/ '/qazaumri';
-        }
-        /*]]>*/
-    </script>
+    <!-- Link to external JavaScript file -->
+    <script th:src="@{/js/qazaCalculator.js}"></script>
 </body>
 </html>

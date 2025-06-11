@@ -84,8 +84,8 @@ body {
 
 .logout-button {
     padding: 10px 20px;
-    background-color: #ff6b6b; /* Red logout button */
-    color: white;
+    background-color: linear-gradient(135deg, #7ca28c, #bfdecc); /* Red logout button */
+    color: black;
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -96,7 +96,7 @@ body {
 }
 
 .logout-button:hover {
-    background-color: #e05252; /* Darker red on hover */
+    background-color: linear-gradient(135deg, #bfdecc, #7ca28c); /* Darker red on hover */
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(255, 107, 107, 0.4);
 }

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qalb Connect - Tasbeeh Counter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/tc.css}"> <!-- Link to dedicated CSS -->
+</head>
+<body>
+    <div class="back-button-container">
+        <!-- Consistent back button styling from qazaCalculator.html -->
+        <a th:href="@{/home}">
+            <button class="back-button">&lt;&lt;&lt; Back to Home</button>
+        </a>
+    </div>
+
+    <div class="container">
+        <h1>Tasbeeh Counter</h1>
+
+        <!-- Counter display area -->
+        <div class="counter-display">
+            <!-- The count will be updated by JavaScript after fetching from backend -->
+            <p>Current Count: <span id="current-count" th:text="${currentCount}">0</span></p>
+        </div>
+
+        <!-- Action buttons are now inside a single form -->
+        <form id="actionForm" th:action="@{/tasbeehcounter}" method="post">
+            <!-- Hidden input to specify the action (increment, reset, undo) -->
+            <input type="hidden" id="hiddenAction" name="action" value="">
+
+            <div class="mood-grid">
+                <!-- Buttons for JS-driven actions -->
+                <button type="button" class="mood-btn" id="increment-btn">Increment</button>
+                <button type="button" class="mood-btn" id="reset-btn">Reset</button>
+                <button type="button" class="mood-btn" id="undo-btn">Undo</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Link to external JavaScript file for counter logic -->
+    <script th:src="@{/js/tc.js}"></script>
+</body>
+</html>

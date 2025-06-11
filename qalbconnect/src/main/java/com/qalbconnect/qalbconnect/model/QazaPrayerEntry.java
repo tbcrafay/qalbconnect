@@ -25,7 +25,23 @@ public class QazaPrayerEntry {
     private LocalDate endDate; // Current or desired ending date for calculation (input from user)
 
     @Column(nullable = false)
-    private long totalDays;
+    private long totalCalendarDays; // Total days between dates, before gender-specific exclusions
+
+    // New fields for gender-specific calculations
+    @Column(nullable = false)
+    private String gender; // "male" or "female"
+
+    @Column // Can be null for male
+    private Integer averagePeriodDays; // Nullable, only for female
+
+    @Column // Can be null for male
+    private Integer totalMonthlyCycles; // Nullable, only for female
+
+    @Column(nullable = false)
+    private long excludedPeriodDays; // 0 for male, calculated for female
+
+    @Column(nullable = false)
+    private long finalMissedDaysForCalculation; // This is the base for Fajr, Zuhr, etc.
 
     @Column(nullable = false)
     private long fajrCount;
@@ -52,14 +68,21 @@ public class QazaPrayerEntry {
     public QazaPrayerEntry() {
     }
 
-    // Constructor for convenience when creating new entries in the service
-    public QazaPrayerEntry(User user, LocalDate startDate, LocalDate endDate, long totalDays,
+    // Comprehensive constructor for new entries
+    public QazaPrayerEntry(User user, LocalDate startDate, LocalDate endDate, long totalCalendarDays,
+                           String gender, Integer averagePeriodDays, Integer totalMonthlyCycles,
+                           long excludedPeriodDays, long finalMissedDaysForCalculation,
                            long fajrCount, long zuhrCount, long asrCount,
                            long maghribCount, long ishaCount, long witrCount) {
         this.user = user;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.totalDays = totalDays;
+        this.totalCalendarDays = totalCalendarDays;
+        this.gender = gender;
+        this.averagePeriodDays = averagePeriodDays;
+        this.totalMonthlyCycles = totalMonthlyCycles;
+        this.excludedPeriodDays = excludedPeriodDays;
+        this.finalMissedDaysForCalculation = finalMissedDaysForCalculation;
         this.fajrCount = fajrCount;
         this.zuhrCount = zuhrCount;
         this.asrCount = asrCount;
@@ -103,12 +126,52 @@ public class QazaPrayerEntry {
         this.endDate = endDate;
     }
 
-    public long getTotalDays() {
-        return totalDays;
+    public long getTotalCalendarDays() {
+        return totalCalendarDays;
     }
 
-    public void setTotalDays(long totalDays) {
-        this.totalDays = totalDays;
+    public void setTotalCalendarDays(long totalCalendarDays) {
+        this.totalCalendarDays = totalCalendarDays;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public Integer getAveragePeriodDays() {
+        return averagePeriodDays;
+    }
+
+    public void setAveragePeriodDays(Integer averagePeriodDays) {
+        this.averagePeriodDays = averagePeriodDays;
+    }
+
+    public Integer getTotalMonthlyCycles() {
+        return totalMonthlyCycles;
+    }
+
+    public void setTotalMonthlyCycles(Integer totalMonthlyCycles) {
+        this.totalMonthlyCycles = totalMonthlyCycles;
+    }
+
+    public long getExcludedPeriodDays() {
+        return excludedPeriodDays;
+    }
+
+    public void setExcludedPeriodDays(long excludedPeriodDays) {
+        this.excludedPeriodDays = excludedPeriodDays;
+    }
+
+    public long getFinalMissedDaysForCalculation() {
+        return finalMissedDaysForCalculation;
+    }
+
+    public void setFinalMissedDaysForCalculation(long finalMissedDaysForCalculation) {
+        this.finalMissedDaysForCalculation = finalMissedDaysForCalculation;
     }
 
     public long getFajrCount() {

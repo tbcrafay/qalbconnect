@@ -90,26 +90,27 @@ h1 {
 
 .back-button {
     padding: 10px 20px;
-    background-color: #007bff; /* Blue button, consistent with login/register */
-    color: white;
+    background-color: linear-gradient(135deg, #7ca28c, #bfdecc); /* Blue button, consistent with login/register */
+    color: black;
     border: none;
     border-radius: 8px;
     cursor: pointer;
+    position: fixed;
     font-size: 1em;
     font-weight: bold;
-    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
 }
 
 .back-button:hover {
-    background-color: #0056b3;
+    background-color: linear-gradient(135deg, #bfdecc, #7ca28c);
     transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
 }
 
 .back-button:active {
     transform: translateY(0);
-    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
 }
 
 

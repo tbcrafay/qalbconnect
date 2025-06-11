@@ -1,0 +1,81 @@
+// src/main/resources/static/js/qazaCalculator.js
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Set max date for date input to today
+    const dateToInput = document.getElementById('dateTo');
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const day = String(today.getDate()).padStart(2, '0');
+    dateToInput.setAttribute('max', `${year}-${month}-${day}`);
+
+    // If endDate is initially empty, set it to today's date for user convenience
+    if (dateToInput.value === '') {
+        dateToInput.value = `${year}-${month}-${day}`;
+    }
+
+    // --- JavaScript for Gender-specific input fields ---
+    const genderMaleRadio = document.getElementById('genderMale');
+    const genderFemaleRadio = document.getElementById('genderFemale');
+    const femaleDetailsDiv = document.getElementById('femaleDetails');
+    const averagePeriodDaysInput = document.getElementById('averagePeriodDays');
+    const totalMonthlyCyclesInput = document.getElementById('totalMonthlyCycles');
+
+    /**
+     * Toggles the visibility of female-specific input fields and manages their required status.
+     * This function is called when a gender radio button is changed or on initial page load.
+     */
+    function toggleFemaleDetails() {
+        if (genderFemaleRadio.checked) {
+            femaleDetailsDiv.style.display = 'block'; // Show the div
+            // Make fields required when visible
+            averagePeriodDaysInput.setAttribute('required', 'true');
+            totalMonthlyCyclesInput.setAttribute('required', 'true');
+        } else {
+            femaleDetailsDiv.style.display = 'none'; // Hide the div
+            // Remove required attribute and clear values when hidden
+            averagePeriodDaysInput.removeAttribute('required');
+            totalMonthlyCyclesInput.removeAttribute('required');
+            averagePeriodDaysInput.value = '';
+            totalMonthlyCyclesInput.value = '';
+        }
+    }
+
+    // Add event listeners to gender radio buttons
+    genderMaleRadio.addEventListener('change', toggleFemaleDetails);
+    genderFemaleRadio.addEventListener('change', toggleFemaleDetails);
+
+    // Initial check on page load to set the correct display state
+    const initialGenderValue = /*[[${request.gender}]]*/ ''; // Get gender from model (Thymeleaf inline JS)
+    if (initialGenderValue === 'female') {
+        genderFemaleRadio.checked = true;
+    } else {
+        // Default to male if no gender is explicitly set or if it's 'male'
+        genderMaleRadio.checked = true;
+    }
+    toggleFemaleDetails(); // Call once on load to set initial state based on default or model value
+});
+
+/**
+ * Function to clear the form and reset the page to its initial state.
+ * This is called by the "Clear" button.
+ */
+function clearFormAndResults() {
+    // Reset the form to its default values
+    document.getElementById('qazaCalculatorForm').reset();
+
+    // Manually reset gender selection to male and hide female details
+    document.getElementById('genderMale').checked = true;
+    document.getElementById('femaleDetails').style.display = 'none';
+    document.getElementById('averagePeriodDays').removeAttribute('required');
+    document.getElementById('totalMonthlyCycles').removeAttribute('required');
+    document.getElementById('averagePeriodDays').value = '';
+    document.getElementById('totalMonthlyCycles').value = '';
+
+    const resultsDiv = document.getElementById('results');
+    if (resultsDiv) {
+        resultsDiv.style.display = 'none';
+    }
+
+    window.location.href = /*[[@{/qazaumri}]]*/ '/qazaumri';
+}

@@ -25,26 +25,27 @@ body {
 
 .back-button {
     padding: 10px 20px;
-    background-color: #007bff; /* Blue button, consistent with login/register */
-    color: white;
+    background-color: linear-gradient(135deg, #7ca28c, #bfdecc); /* Blue button, consistent with login/register */
+    color: black;
     border: none;
     border-radius: 8px;
     cursor: pointer;
+    position: fixed;
     font-size: 1em;
     font-weight: bold;
-    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
 }
 
 .back-button:hover {
-    background-color: #0056b3;
+    background-color: linear-gradient(135deg, #bfdecc, #7ca28c);
     transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
 }
 
 .back-button:active {
     transform: translateY(0);
-    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
 }
 
 /* Main Container for the form and results */
@@ -77,7 +78,8 @@ label {
     color: #bfdecc;
 }
 
-input[type="date"] {
+input[type="date"],
+input[type="number"] { /* Apply to number inputs as well */
     width: calc(100% - 22px); /* Adjust width for padding */
     padding: 10px;
     margin: 5px 0 15px;
@@ -85,7 +87,7 @@ input[type="date"] {
     border-radius: 5px;
     background-color: #122c1e; /* Input background from namesofAllah theme */
     color: #bfdecc;
-    appearance: none; /* Remove default browser styling for date input */
+    appearance: none; /* Remove default browser styling for date/number input */
     -webkit-appearance: none;
     cursor: text; /* Show text cursor */
 }
@@ -217,6 +219,7 @@ button.clear:active {
     border-radius: 10px;
     border: 1px solid #7cb292;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    overflow: hidden; /* Ensure table wrapper doesn't overflow history section */
 }
 
 .history-section h2 {
@@ -228,8 +231,18 @@ button.clear:active {
     font-size: 1.8rem;
 }
 
+/* Wrapper for horizontal scrolling */
+.table-scroll-wrapper {
+    overflow-x: auto; /* Enable horizontal scrolling */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    padding-bottom: 10px; /* Space for scrollbar */
+    border-radius: 8px; /* Match table rounded corners */
+}
+
+
 .history-table {
-    width: 100%;
+    width: 100%; /* Ensure table takes full width of its wrapper */
+    min-width: 700px; /* Set a minimum width to prevent columns from collapsing too much */
     border-collapse: collapse;
     margin-top: 15px;
 }
@@ -239,6 +252,7 @@ button.clear:active {
     text-align: left;
     border-bottom: 1px solid #7cb292; /* Lighter border for rows */
     color: #bfdecc;
+    white-space: nowrap; /* Prevent text wrapping in cells by default */
 }
 
 .history-table th {
@@ -258,7 +272,102 @@ button.clear:active {
     background-color: #2a4036; /* Hover effect for rows */
 }
 
+/* NEW CSS for gender-specific inputs */
+.gender-selection {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    display: flex; /* Use flexbox for layout */
+    align-items: center; /* Align items vertically */
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+    gap: 15px; /* Space between radio buttons and labels */
+}
+
+.gender-selection label {
+    margin-top: 0; /* Override default label margin */
+    font-weight: bold;
+    color: #bfdecc;
+    display: inline-flex; /* Align radio button and text */
+    align-items: center;
+    cursor: pointer;
+}
+
+/* Custom radio button styling */
+.gender-selection input[type="radio"] {
+    width: auto; /* Don't stretch radios */
+    margin-right: 5px;
+    vertical-align: middle;
+    transform: scale(1.2); /* Slightly larger radio buttons for better click/tap target */
+    cursor: pointer;
+    border: 1px solid #7cb292; /* Custom border */
+    background-color: #122c1e; /* Custom background */
+    appearance: none; /* Hide default radio button */
+    -webkit-appearance: none; /* For WebKit browsers */
+    border-radius: 50%; /* Make it round */
+    outline: none; /* Remove focus outline */
+    transition: background-color 0.2s, border-color 0.2s; /* Smooth transition */
+    position: relative; /* For custom inner dot */
+}
+
+.gender-selection input[type="radio"]::before {
+    content: '';
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: transparent;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: background-color 0.2s;
+}
+
+.gender-selection input[type="radio"]:checked {
+    background-color: #7cb292; /* Filled when checked */
+    border-color: #bfdecc;
+}
+.gender-selection input[type="radio"]:checked::before {
+    background-color: #0a1d15; /* Dark dot when checked */
+}
+
+.gender-details {
+    border: 1px solid #7cb292;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    background-color: #122c1e; /* Slightly different background for sub-section */
+    box-shadow: inset 0px 0px 5px rgba(191, 222, 204, 0.1);
+    /* Initially hidden by default, JS will toggle this */
+    display: none;
+}
+
+/* NEW: Styles for the consolidated prayer counts grid */
+.prayer-counts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 columns per row */
+    gap: 5px; /* Small gap between prayer items */
+    font-size: 0.9em; /* Smaller font for compactness */
+    line-height: 1.2;
+    padding: 5px 0; /* Vertical padding */
+    white-space: normal; /* Allow content inside grid to wrap */
+}
+
+.prayer-counts-grid span {
+    display: block; /* Each span on its own line within the grid cell */
+    text-align: left;
+}
+
+
 /* Responsive adjustments */
+@media (max-width: 900px) { /* Adjusted breakpoint for more columns */
+    .history-table th:nth-child(5), /* Avg Period Days */
+    .history-table td:nth-child(5),
+    .history-table th:nth-child(6), /* Total Cycles */
+    .history-table td:nth-child(6) {
+        display: none; /* Hide these on smaller screens */
+    }
+}
+
 @media (max-width: 768px) {
     body {
         padding: 10px;
@@ -283,13 +392,30 @@ button.clear:active {
         font-size: 0.9em;
         padding: 8px;
     }
-    /* Hide some columns on small screens for better readability */
-    .history-table td:nth-child(3), /* totalDays */
-    .history-table th:nth-child(3),
-    .history-table td:nth-child(6), /* Isha */
-    .history-table th:nth-child(6),
-    .history-table td:nth-child(7), /* Witr */
-    .history-table th:nth-child(7) {
+    /* Hide more columns on smaller screens */
+    .history-table th:nth-child(3), /* Days (Total) */
+    .history-table td:nth-child(3),
+    .history-table th:nth-child(7), /* Excluded Days */
+    .history-table th:nth-child(8), /* Final Missed Days */
+    .history-table td:nth-child(7),
+    .history-table td:nth-child(8) {
         display: none;
     }
+    .history-table th:nth-child(1), .history-table td:nth-child(1) { width: 30%; } /* Date */
+    .history-table th:nth-child(2), .history-table td:nth-child(2) { width: 40%; } /* From - To */
+    .history-table th:nth-child(4), .history-table td:nth-child(4) { width: 30%; } /* Gender */
+}
+
+@media (max-width: 480px) {
+     /* On very small screens, make "Prayers" column take more space, hide From-To */
+     .history-table th:nth-child(2), /* From - To */
+     .history-table td:nth-child(2) {
+         display: none;
+     }
+     .history-table th:nth-child(1), .history-table td:nth-child(1) { width: 40%; } /* Date */
+     .history-table th:nth-child(4), .history-table td:nth-child(4) { width: 60%; } /* Gender */
+     .history-table th:nth-child(9), .history-table td:nth-child(9) { width: 100%; } /* Prayers (full width) */
+     .prayer-counts-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns per row for even tighter space */
+     }
 }
